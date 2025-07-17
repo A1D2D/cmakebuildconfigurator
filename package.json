@@ -1,0 +1,148 @@
+{
+  "name": "cmakebuildconfigurator",
+  "displayName": "CmakeBuildConfigurator",
+  "description": "cmake toolchain configurator",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.102.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "cmakebuildconfigurator.cmakeProfiles",
+        "title": "CmakeProfile"
+      },
+      {
+        "command": "cmakebuildconfigurator.cmakeTargets",
+        "title": "CmakeTarge"
+      },
+      {
+        "command": "cmakebuildconfigurator.runCommand",
+        "title": "Run",
+        "icon": "$(play)"
+      },
+      {
+        "command": "cmakebuildconfigurator.configureCmake",
+        "title": "configure cmake",
+        "icon": "$(wrench)"
+      },
+
+      {
+        "command": "cmakebuildconfigurator.configureCmakeToolchains",
+        "title": "configure cmake: toolchains"
+      },
+      {
+        "command": "cmakebuildconfigurator.configureCmakeProfiles",
+        "title": "configure cmake: profiles"
+      },
+      {
+        "command": "cmakebuildconfigurator.configureCmakeTargets",
+        "title": "configure cmake: targets"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "cmakebuildconfigurator.cmakeProfiles",
+          "group": "navigation@1"
+        },
+        {
+          "command": "cmakebuildconfigurator.cmakeTargets",
+          "group": "navigation@2"
+        },
+        {
+          "command": "cmakebuildconfigurator.runCommand",
+          "group": "navigation@3"
+        },
+        {
+          "command": "cmakebuildconfigurator.configureCmake",
+          "group": "navigation@4"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Cmake Build Configurator",
+      "properties": {
+        "cmakebuildconfigurator.cmakeProfilesConfig": {
+          "type": "string",
+          "default": "",
+          "description": "selected cmake config."
+        },
+        "cmakebuildconfigurator.cmakeTargetsConfig": {
+          "type": "string",
+          "default": "",
+          "description": "selected cmake target."
+        },
+
+        "cmakebuildconfigurator.toolchains": {
+          "type": "array",
+          "description": "List of toolchains.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string", "description": "Name of the toolchain." },
+              "toolsetFolder": { "type": "string", "description": "Toolset folder path." },
+              "cmake": { "type": "string", "description": "CMake executable path." },
+              "buildTool": { "type": "string", "description": "Build tool path." },
+              "ccompiler": { "type": "string", "description": "C Compiler executable path." },
+              "c++compiler": { "type": "string", "description": "C++ Compiler executable path." },
+              "debugger": { "type": "string", "description": "Debugger executable path." }
+            }
+          }
+        },
+
+        "cmakebuildconfigurator.cmakeProfiles": {
+          "type": "array",
+          "description": "List of CMake profiles.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string", "description": "Profile name (e.g., Debug)." },
+              "buildType": { "type": "string", "description": "CMAKE_BUILD_TYPE value." },
+              "toolchain": { "type": "string", "description": "Toolchain name to use." },
+              "generator": { "type": "string", "description": "CMake generator (e.g. Ninja, Unix Makefiles)." },
+              "cmakeOptions": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Extra CMake command line options."
+              },
+              "cacheVariables": {
+                "type": "object",
+                "description": "CMake cache variables to define.",
+                "additionalProperties": { "type": "string" }
+              },
+              "buildDirectory": { "type": "string", "description": "Build output directory path." },
+              "buildOptions": { "type": "string", "description": "Flags for the build step (e.g. -j 14)." },
+              "environment": {
+                "type": "object",
+                "description": "Additional environment variables for the build.",
+                "additionalProperties": { "type": "string" }
+              }
+            }
+          }
+        }
+
+      }
+    }
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "pretest": "npm run lint",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.102.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "20.x",
+    "eslint": "^9.25.1",
+    "@vscode/test-cli": "^0.0.11",
+    "@vscode/test-electron": "^2.5.2"
+  }
+}
