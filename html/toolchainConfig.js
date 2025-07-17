@@ -1,16 +1,37 @@
 let toolchains;
+const listEl = document.getElementById("toolchain-list");
 
 function render() {
-   const list = document.getElementById('list');
-   list.innerHTML = '';
+   listEl.innerHTML = "";
    toolchains.forEach((tc, i) => {
-      const div = document.createElement('div');
-      div.innerHTML = `
-         <input placeholder="Name" value="${tc.name}" data-i="${i}" data-k="name" />
-         <input placeholder="Toolset" value="${tc.toolsetFolder}" data-i="${i}" data-k="toolsetFolder" />
-         <button data-i="${i}" class="delete">Delete</button>
-      `;
-      list.appendChild(div);
+      const opt = document.createElement("option");
+      opt.value = i;
+      opt.textContent = tc.name || `Toolchain ${i}`;
+      listEl.appendChild(opt);
+   });
+   updateForm();
+}
+
+function updateForm() {
+   const formFields = [
+      'name', 'toolsetFolder', 'cmake',
+      'buildTool', 'ccompiler', 'cppcompiler', 'debugger'
+   ];
+   const toolchain = toolchains[listEl.selectedIndex];
+   formFields.forEach(id => {
+      document.getElementById(id).value = toolchain ? (toolchain[id] || '') : '';
+   });
+}
+
+function updateToolchainFromForm() {
+   if (listEl.selectedIndex < 0) return;
+   const formFields = [
+      'name', 'toolsetFolder', 'cmake',
+      'buildTool', 'ccompiler', 'cppcompiler', 'debugger'
+   ];
+   const toolchain = toolchains[listEl.selectedIndex];
+   formFields.forEach(id => {
+      toolchain[id] = document.getElementById(id).value;
    });
 }
 
@@ -30,24 +51,27 @@ document.getElementById('add').onclick = () => {
    render();
 };
 
+document.getElementById('remove').onclick = () => {
+   const index = listEl.selectedIndex;
+   if (index >= 0) {
+      toolchains.splice(index, 1);
+   }
+   render();
+};
+
 document.getElementById('save').onclick = () => {
-   document.querySelectorAll('input').forEach(el => {
-      const i = el.dataset.i;
-      const key = el.dataset.k;
-      toolchains[i][key] = el.value;
-   });
+   updateToolchainFromForm();
+   updateForm();
+   render();
    vscode.postMessage({ command: 'saveToolchains', toolchains });
 };
 
-document.getElementById('list').onclick = e => {
-   if (e.target.classList.contains('delete')) {
-      toolchains.splice(e.target.dataset.i, 1);
-      render();
-   }
-};
+document.getElementById("toolchain-list").onclick = e => {
+   updateForm();
+}
 
 document.getElementById('action').onclick = e => {
-   vscode.postMessage({ command: 'action'});
+   vscode.postMessage({ command: 'action' });
 };
 
-vscode.postMessage({ command: 'dataRequest'});
+vscode.postMessage({ command: 'dataRequest' });

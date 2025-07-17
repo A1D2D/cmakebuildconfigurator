@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <title>Manage Toolchains</title>
-  <link rel="stylesheet" href="{{root}}/toolchainConfig.css" />
+  <link rel="stylesheet" href="{{root}}/profileConfig.css" />
 </head>
 <body>
   <div class="layout">
-    <h1 class="page-title">Toolchains</h1>
+    <h1 class="page-title">Profiles</h1>
     <div class="container">
       <div class="sidebar">
         <div class="topnav">
@@ -17,18 +17,16 @@
           <button id="down" title="Down">˅</button>
           <button id="up" title="Up">˄</button>
         </div>
-        <select id="toolchain-list" size="10"></select>
+        <select id="profile-list" size="10"></select>
       </div>
       <div class="main">
         <div id="editor">
-          <form id="toolchain-form">
+          <form id="profile-form">
             <label>Name: <input type="text" id="name" /></label><br />
-            <label>Toolset Folder: <input type="text" id="toolsetFolder" /></label><br />
-            <label>CMake: <input type="text" id="cmake" /></label><br />
-            <label>Build Tool: <input type="text" id="buildTool" /></label><br />
-            <label>C Compiler: <input type="text" id="ccompiler" /></label><br />
-            <label>C++ Compiler: <input type="text" id="cppcompiler" /></label><br />
-            <label>Debugger: <input type="text" id="debugger" /></label><br />
+            <label>Build Type: <input type="text" id="buildType" /></label><br />
+            <label>Toolchain: <input type="text" id="toolchain" /></label><br />
+            <label>Generator: <input type="text" id="generator" /></label><br />
+            <label>Build Dir: <input type="text" id="buildDirectory" /></label><br />
           </form>
         </div>
         <div class="actions">
@@ -41,6 +39,6 @@
   <script>
 		const vscode = acquireVsCodeApi();
   </script>
-  <script src="{{root}}/toolchainConfig.js"></script>
+  <script src="{{root}}/profileConfig.js"></script>
 </body>
 </html>

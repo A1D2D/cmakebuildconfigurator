@@ -21,7 +21,7 @@
       },
       {
         "command": "cmakebuildconfigurator.cmakeTargets",
-        "title": "CmakeTarge"
+        "title": "CmakeTarget"
       },
       {
         "command": "cmakebuildconfigurator.runCommand",
