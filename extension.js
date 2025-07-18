@@ -156,7 +156,18 @@ function activate(context) {
 					vscode.window.showInformationMessage('Profile saved!');
 					break;
 				case 'dataRequest':
-					updateWebviewProfiles(panel);
+					const config = vscode.workspace.getConfiguration('cmakebuildconfigurator');
+					profiles = config.get('cmakeProfiles') || [];
+					panel.webview.postMessage({
+						command: 'allProfiles',
+						data: profiles
+					});
+
+					//panel.webview.postMessage({
+					//	command: 'asdasd',
+					//	data: 'asdasd'
+					//});
+
 					break;
 				case 'action':
 					vscode.window.showInformationMessage('action Test button');
@@ -224,7 +235,7 @@ function updateWebviewToolChains(panel) {
 	toolchains = config.get('toolchains') || [];
 	panel.webview.postMessage({
 		command: 'setToolchains',
-		toolchains: toolchains
+		data: toolchains
 	});
 }
 
@@ -242,7 +253,7 @@ function updateWebviewProfiles(panel) {
 	profiles = config.get('cmakeProfiles') || [];
 	panel.webview.postMessage({
 		command: 'setProfiles',
-		profiles: profiles
+		data: profiles
 	});
 }
 
