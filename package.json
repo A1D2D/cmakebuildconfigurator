@@ -29,9 +29,19 @@
         "icon": "$(play)"
       },
       {
-        "command": "cmakebuildconfigurator.configureCmake",
-        "title": "configure cmake",
+        "command": "cmakebuildconfigurator.buildCommand",
+        "title": "Build",
+        "icon": "$(tools)"
+      },
+      {
+        "command": "cmakebuildconfigurator.configureCmakeSettings",
+        "title": "configure cmake settins",
         "icon": "$(wrench)"
+      },
+      {
+        "command": "cmakebuildconfigurator.configurecmake",
+        "title": "configure cmake",
+        "icon": "$(refresh)"
       },
 
       {
@@ -62,8 +72,17 @@
           "group": "navigation@3"
         },
         {
-          "command": "cmakebuildconfigurator.configureCmake",
+          "command": "cmakebuildconfigurator.buildCommand",
           "group": "navigation@4"
+        },
+        {
+          "command": "cmakebuildconfigurator.configureCmakeSettings",
+          "group": "navigation@5"
+        },
+        {
+          "command": "cmakebuildconfigurator.configurecmake",
+          "when": "cmakeFileActive",
+          "group": "navigation@6"
         }
       ]
     },
@@ -92,7 +111,7 @@
               "cmake": { "type": "string", "description": "CMake executable path." },
               "buildTool": { "type": "string", "description": "Build tool path." },
               "ccompiler": { "type": "string", "description": "C Compiler executable path." },
-              "c++compiler": { "type": "string", "description": "C++ Compiler executable path." },
+              "cxxcompiler": { "type": "string", "description": "C++ Compiler executable path." },
               "debugger": { "type": "string", "description": "Debugger executable path." }
             }
           }
