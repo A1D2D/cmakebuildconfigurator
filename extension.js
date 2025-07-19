@@ -9,6 +9,8 @@ let statusBarCT;
 let toolchains = [];
 let profiles = [];
 
+let activeBuildDir;
+
 function activate(context) {
 	statusBarCP = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 5);
 	statusBarCP.command = 'cmakebuildconfigurator.cmakeProfiles';
@@ -60,7 +62,7 @@ function activate(context) {
 			placeHolder: 'Select CMake Profile'
 		});
 
-		if(editString == selected) {
+		if (editString == selected) {
 			vscode.commands.executeCommand('cmakebuildconfigurator.configureCmakeProfiles');
 			return;
 		}
@@ -74,11 +76,26 @@ function activate(context) {
 	const cmakeTargetsCL = vscode.commands.registerCommand('cmakebuildconfigurator.cmakeTargets', async () => {
 		const editString = '[Edit Target Config]';
 		let targets = ['L1', 'app', 'idk', 'project999'];
+
+		if (typeof activeBuildDir === 'string') {
+			const workspaceFolders = vscode.workspace.workspaceFolders;
+			if (!workspaceFolders) {
+				vscode.window.showErrorMessage('No workspace folder open!');
+				return;
+			}
+
+			const projectPath = workspaceFolders[0].uri.fsPath;
+
+			vscode.window.showInformationMessage('BuildCommand Test: ' + activeBuildDir);
+
+			targets = parseCMakeTargets(projectPath + '\\' + activeBuildDir);
+		} else vscode.window.showErrorMessage(`Failed to get CMake targets: build directory not defined`);
+
 		targets.push(editString);
 		const selected = await vscode.window.showQuickPick(targets, {
 			placeHolder: 'Select Target'
 		});
-		if(editString == selected) {
+		if (editString == selected) {
 			vscode.commands.executeCommand('cmakebuildconfigurator.configureCmakeTargets');
 			return;
 		}
@@ -132,7 +149,7 @@ function activate(context) {
 				case 'action':
 					vscode.window.showInformationMessage('action Test button');
 					break;
-			
+
 				default:
 					break;
 			}
@@ -161,7 +178,7 @@ function activate(context) {
 				case 'action':
 					vscode.window.showInformationMessage('action Test button');
 					break;
-			
+
 				default:
 					break;
 			}
@@ -196,7 +213,7 @@ function updateFileContext() {
 	vscode.commands.executeCommand('setContext', 'cmakeFileActive', isCMake);
 }
 
-function deactivate() {}
+function deactivate() { }
 
 function updateStatusBarCP(config) {
 	statusBarCP.text = `Profile: ${config}`;
@@ -211,12 +228,12 @@ function updateStatusBarCT(config) {
 }
 
 function getWebviewToolchains(panel, context) {
-  const htmlPath = path.join(context.extensionPath, 'html', 'toolchainConfig.html');
-  let html = fs.readFileSync(htmlPath, 'utf8');
+	const htmlPath = path.join(context.extensionPath, 'html', 'toolchainConfig.html');
+	let html = fs.readFileSync(htmlPath, 'utf8');
 
-  // Replace paths to local resources with proper webview URIs
-  html = html.replace(/{{root}}/g, panel.webview.asWebviewUri(vscode.Uri.file(path.join(context.extensionPath, 'html'))));
-  return html;
+	// Replace paths to local resources with proper webview URIs
+	html = html.replace(/{{root}}/g, panel.webview.asWebviewUri(vscode.Uri.file(path.join(context.extensionPath, 'html'))));
+	return html;
 }
 
 function updateWebviewToolChains(panel) {
@@ -229,12 +246,12 @@ function updateWebviewToolChains(panel) {
 }
 
 function getWebviewProfiles(panel, context) {
-  const htmlPath = path.join(context.extensionPath, 'html', 'profileConfig.html');
-  let html = fs.readFileSync(htmlPath, 'utf8');
+	const htmlPath = path.join(context.extensionPath, 'html', 'profileConfig.html');
+	let html = fs.readFileSync(htmlPath, 'utf8');
 
-  // Replace paths to local resources with proper webview URIs
-  html = html.replace(/{{root}}/g, panel.webview.asWebviewUri(vscode.Uri.file(path.join(context.extensionPath, 'html'))));
-  return html;
+	// Replace paths to local resources with proper webview URIs
+	html = html.replace(/{{root}}/g, panel.webview.asWebviewUri(vscode.Uri.file(path.join(context.extensionPath, 'html'))));
+	return html;
 }
 
 function updateWebviewProfiles(panel) {
@@ -272,6 +289,7 @@ function runCMakeCommand(projectPath) {
 	const cppCompiler = toolchain.cppcompiler ? `-DCMAKE_CXX_COMPILER=${toolchain.cppcompiler}` : '';
 	const buildDir = profile.buildDirectory || profile.buildType ? `build-${profile.buildType.toLowerCase()}` : 'build';
 
+	activeBuildDir = buildDir;
 
 	const buildToolType = toolchain.buildTool ? detectGeneratorFromBuildTool(toolchain.buildTool) : '';
 	const optionalBuildTypeFlag = buildToolType ? '-G ${buildToolType}' : '';
@@ -285,7 +303,7 @@ function runCMakeCommand(projectPath) {
 	};
 
 	const child = cp.exec(cmakeCmd, options);
-	
+
 	child.stdout.on('data', (data) => output.append(data.toString()));
 	child.stderr.on('data', (data) => output.append(data.toString()));
 
@@ -308,9 +326,44 @@ function detectGeneratorFromBuildTool(buildToolPathOrName) {
 		return 'NMake Makefiles';
 	}
 	if (name.includes('msbuild')) {
-		return 'Visual Studio 17 2022'; 
+		return 'Visual Studio 17 2022';
 	}
 	return null;
+}
+
+function parseCMakeTargets(buildDir) {
+	const replyDir = buildDir + '/.cmake/api/v1/reply';
+	const indexPath = fs.readdirSync(replyDir).find(f => f.startsWith("index-") && f.endsWith(".json"));
+	if (!indexPath) {
+		throw new Error("No index-*.json file found in reply directory");
+	}
+
+	const index = JSON.parse(fs.readFileSync(path.join(replyDir, indexPath), 'utf8'));
+	const codeModelObj = index.reply.find(obj => obj.kind === "codemodel");
+
+	if (!codeModelObj) {
+		throw new Error("codemodel not found in index");
+	}
+
+	const codeModel = JSON.parse(fs.readFileSync(path.join(replyDir, codeModelObj.jsonFile), 'utf8'));
+
+	const targets = [];
+
+	for (const config of codeModel.configurations) {
+		for (const targetRef of config.targets) {
+			const targetPath = path.join(replyDir, targetRef.jsonFile);
+			const targetData = JSON.parse(fs.readFileSync(targetPath, 'utf8'));
+
+			targets.push({
+				name: targetData.name,
+				type: targetData.type,
+				sources: targetData.sources?.map(s => s.path) || [],
+				artifacts: targetData.artifacts?.map(a => a.path) || [],
+			});
+		}
+	}
+
+	return targets;
 }
 
 module.exports = {
